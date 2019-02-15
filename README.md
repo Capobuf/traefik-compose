@@ -10,13 +10,98 @@ This repo is composed from 3 files:
 
 ## Getting Started ##
 
+### Requirements ###
+
+We are using an Ubuntu Machine (18.04.02) Hosted on DigitalOcean.
+
+Really, it's a Droplet, with an Image of Docker pre-installed. 
+
+### Version of Traefik ###
+We using latest image available on DockerHub Registry of Trafeik, using :latest tag on repo/imagetag command.
+
+### How To Clone a Repo ###
+
+In order to using pre-esisting repository submitted by Original Creators of Traefik and more we need to clone the repository (something like download the entire folder with all file)
+
+For do this, we need to check if `git` command it's available on our machine.
+So type in terminal:
+
+`git --version`
+
+In case we have already installed `git` we was able to see
+
+`git version X.XX.X`
+
+If not, we can install `git` via apt (on debian-based distro) with:
+
+`sudo apt-get install git`
+
+So, for doing a "clone" of a repo we can use:
+
+`git clone https://github.com/Capobuf/traefik-compose.git`
+
+In this case, we clone this repo, but replacing the url we can clone another repo!
+
+### How To SetUp Environment Variables ###
+
+First of all, the Env Variables are simply a dynamic variable/path of our system resources. We're using this variable to pass information from a process to other.
+Usually, all Env have Capital letters, for distinguish the Env from other contex.
+
+i.e $USER in my linux shell response something like **Capobuf**. 
+
+But in @daton89 shell, response **daton**
+
+As we can see, depends of environment!
+
+... Work in Progress ...
+
+### How to Generate Hashed Passwd for Basic Auth in Traefik ###
+
+As described in [Digital Ocean Documentation](https://www.digitalocean.com/community/tutorials/how-to-use-traefik-as-a-reverse-proxy-for-docker-containers-on-ubuntu-16-04) we can use **htpasswd** utilty for generating an hash from text.
+This utility was contained in **apache2-util** package.
+
+So first of all, install the main package:
+
+`sudo apt-get install apache2-utils`
+
+For Generating the Hash:
+
+`htpasswd -nb admin your_password_here`
+
+Output it's something like
+
+`admin:$apr1$3jk2MbXm$ZNeJi9pjyYNsKRKLBCg1v1`
+
+This is your hash!
+
+Insert this string in **traefik.toml**, in this section
+
+```java
+[web]
+address = ":8080"
+  [web.auth.basic]
+  users = ["your_hashed_password_here"]
+  ```
+
+As example showed before, something like this:
+
+```java
+[web]
+address = ":8080"
+  [web.auth.basic]
+  users = ["admin:$apr1$3jk2MbXm$ZNeJi9pjyYNsKRKLBCg1v1"]
+  ```
+
+### How To Start a Project ###
+
+
 Describe here how to getting started:
 
-- requirements, linux machine with linux and docker version xxx
-- version of traefik etc
-- how to clone repo
+- ~~requirements, linux machine with linux and docker version xxx~~
+- ~~version of traefik etc~~
+- ~~how to clone repo~~
 - how to set up environment variables
-- how to generate your hashed password for basic auth of traefik admin panel
+- ~~how to generate your hashed password for basic auth of traefik admin panel~~
 - hwo to start project
 - how to check that everyting is working
 - future readings and related projects
