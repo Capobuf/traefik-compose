@@ -10,13 +10,13 @@ This repo is composed from 3 files:
 
 ## Getting Started ##
 
-### Requirements ###
+### **Requirements** ###
 
 We are using an Ubuntu Machine (18.04.02) Hosted on DigitalOcean.
 
 Really, it's a Droplet, with an Image of Docker pre-installed. 
 
-### How To Clone a Repo ###
+### **How To Clone a Repo** ###
 
 In order to using pre-esisting repository submitted by Original Creators of Traefik and more we need to clone the repository (something like download the entire folder with all file)
 
@@ -39,10 +39,10 @@ So, for doing a "clone" of a repo we can use:
 
 In this case, we clone this repo, but replacing the url we can clone another repo!
 
-### Version of Traefik ###
+### **Version of Traefik** ###
 We using latest image available on DockerHub Registry of Trafeik, using :latest tag on repo/imagetag command.
 
-### DockerFile ###
+### **DockerFile** ###
 A DockerFile, it's a text file, without extension, that allow us to create an instruction for build an image or run a container.
 
 In this file, we must declare an base image from starting to work!
@@ -57,11 +57,44 @@ Every, single command, create a layer on image.
 That's really helpful for modify and understand error!
 
 
+### How to Generate Hashed Passwd for Basic Auth in Traefik ###
 
+As described in [Digital Ocean Documentation](https://www.digitalocean.com/community/tutorials/how-to-use-traefik-as-a-reverse-proxy-for-docker-containers-on-ubuntu-16-04) we can use **htpasswd** utilty for generating an hash from text.
+This utility was contained in **apache2-util** package.
 
+So first of all, install the main package:
 
+`sudo apt-get install apache2-utils`
 
-### How To SetUp Environment Variables ###
+For Generating the Hash:
+
+`htpasswd -nb admin your_password_here`
+
+Output it's something like
+
+`admin:$apr1$3jk2MbXm$ZNeJi9pjyYNsKRKLBCg1v1`
+
+This is your hash!
+
+Insert this string in **traefik.toml**, in this section
+
+```toml
+[web]
+address = ":8080"
+  [web.auth.basic]
+  users = ["your_hashed_password_here"]
+  ```
+
+As example showed before, something like this:
+
+```toml
+[web]
+address = ":8080"
+  [web.auth.basic]
+  users = ["admin:$apr1$3jk2MbXm$ZNeJi9pjyYNsKRKLBCg1v1"]
+  ```
+
+### **How To SetUp Environment Variables** ###
 
 First of all, the Env Variables are simply a dynamic variable/path of our system resources. We're using this variable to pass information from a process to other.
 Usually, all Env have Capital letters, for distinguish the Env from other contex.
@@ -116,45 +149,78 @@ services:
             		 --docker --docker.domain="${DOCKER_DOMAIN}" --docker.endpoint="unix:///var/run/docker.sock" \
             		 --docker.watch=true --docker.exposedbydefault="false"
 ```
-As we can see in this **portion of DockerFile** we use the **env** file for declare the env variable, without importing it.
+As we can see in this **portion of DockerFile** we use the **env** file for declare the env variable.
 
+## How to Start a Project ##
 
-### How to Generate Hashed Passwd for Basic Auth in Traefik ###
+First, we need to install a GUI for manage our container.
+We choose [Portainer](https://www.portainer.io/), very useful tool!
 
-As described in [Digital Ocean Documentation](https://www.digitalocean.com/community/tutorials/how-to-use-traefik-as-a-reverse-proxy-for-docker-containers-on-ubuntu-16-04) we can use **htpasswd** utilty for generating an hash from text.
-This utility was contained in **apache2-util** package.
+After that, we need to install Traefik for manage all request to our server, this is for analyze, protect and secure our container (i.e. for avoid external attack, manage out-of-law request and more...)
 
-So first of all, install the main package:
+### Understanting Docker Socket ###
 
-`sudo apt-get install apache2-utils`
+First of all, we need to clarify the role of Docker (and Unix) socket.
 
-For Generating the Hash:
+Sometimes we need to speak directly with Docker Daemon, for manage and run some operation with it.
 
-`htpasswd -nb admin your_password_here`
+/var/run/docker.sock file that's the aswer for doing this.
 
-Output it's something like
+With this path we can communicate from a Daemon in a Container with docker daemon.
 
-`admin:$apr1$3jk2MbXm$ZNeJi9pjyYNsKRKLBCg1v1`
+An Example? Portainer.
 
-This is your hash!
+### Understanding Difference btw Dockerfile and Docker-compose.yml
 
-Insert this string in **traefik.toml**, in this section
+In Dockerfile we can write all our settings and parameters, from an **image**, for build another **image**, **not a container**.
 
-```toml
-[web]
-address = ":8080"
-  [web.auth.basic]
-  users = ["your_hashed_password_here"]
-  ```
+In Docker-compose.yaml we can write all settings and parameters for building a **container**, from an image.
 
-As example showed before, something like this:
+Usually, the docker-compose.yaml it's pretty useful for building a Service, that's something like a Stack of Container, wich is linked togheter, without too munch work.
 
-```toml
-[web]
-address = ":8080"
-  [web.auth.basic]
-  users = ["admin:$apr1$3jk2MbXm$ZNeJi9pjyYNsKRKLBCg1v1"]
-  ```
+But it's same useful for understanding better all the components we using and debug better in case of failure.
+
+### Understanding Difference btw Docker Start, UP and Build ###
+
+`docker-compose up` it's the best choice. Start/Restart all service and stuff in docker-compose.yaml
+
+`docker build` essentially, telling docker to create an image from our dockerfile.
+
+`docker run` essentially telling docker to create a container with the image we specified, with all mod in dockerfile, even it come from DockerHub.
+
+PS: It's a very Quick&Simple explanation, even some command here appear similar, each one have a specific flag and field of use.
+
+### Install & Configure Portainer ###
+
+Portainer Docu was cleary on the installation process:
+
+``docker volume create portainer_data`` 
+
+For creating a Volume for Portainer named `portainer_data`.
+
+``docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer``
+
+For Create a Container, in deattached mode, with 9000 as exposed port, listening docker socket, with an volume attached as `portainer_data`
+
+More detailed:
+
+`-d` run Daemon in Background
+
+`-p 9000:9000` expose port 9000 of the container as port 9000 of the server.
+
+`-v /var/run/docker.sock:/var/run/docker.sock` pass Docker Socket to Portainer for manage and run container directly from Portainer. the `-v` flag it's used for attach a volume
+
+`-v portainer_data:/data portainer/portainer` for attach another storage to our container, called `portainer_data`
+
+After that, we can go into server_public_ip:9000 for showing first screen of Portainer, with possibility to set our credentials for login.
+
+We must select "Local" option, for manage our docker installation.
+
+PS: The setup, tells us to pass Docker socket to Portainer, in local option, but we did already :)
+
+### Installing and Configure Traefik ###
+
+...Work in Progress!
 
 ### How To Start a Project ###
 
