@@ -137,18 +137,18 @@ Ok, we have set the **env** file, now it's turn of DockerFile
 ```java
 version: 3.3
 services:
-	lb:
-		image: traefik:1.5-alpine
-   		restart: always
-   		command: --web --acme.storage=/etc/traefik/acme.json --logLevel=info \
-        
+  lb:
+    image: traefik:1.5-alpine
+      restart: always
+      command: --web --acme.storage=/etc/traefik/acme.json --logLevel=info \
          ${TRAEFIK_ENTRYPOINT_HTTP} ${TRAEFIK_ENTRYPOINT_HTTPS}\
-            		 --defaultentrypoints=${TRAEFIK_DEFAULT_ENTRYPOINTS} \
+                 --defaultentrypoints=${TRAEFIK_DEFAULT_ENTRYPOINTS} \
                          --acme=${ACME_ENABLE} --acme.entrypoint=https --acme.httpchallenge --acme.httpchallenge.entrypoint=http \
-            		 --acme.domains="${ACME_DOMAINS}" --acme.email="${ACME_EMAIL}" \
-            		 --docker --docker.domain="${DOCKER_DOMAIN}" --docker.endpoint="unix:///var/run/docker.sock" \
-            		 --docker.watch=true --docker.exposedbydefault="false"
+                 --acme.domains="${ACME_DOMAINS}" --acme.email="${ACME_EMAIL}" \
+                 --docker --docker.domain="${DOCKER_DOMAIN}" --docker.endpoint="unix:///var/run/docker.sock" \
+                 --docker.watch=true --docker.exposedbydefault="false"
 ```
+
 As we can see in this **portion of DockerFile** we use the **env** file for declare the env variable.
 
 ## How to Start a Project ##
@@ -170,7 +170,7 @@ With this path we can communicate from a Daemon in a Container with docker daemo
 
 An Example? Portainer.
 
-### Understanding Difference btw Dockerfile and Docker-compose.yml
+### Understanding Difference btw Dockerfile and Docker-compose.yml ###
 
 In Dockerfile we can write all our settings and parameters, from an **image**, for build another **image**, **not a container**.
 
@@ -194,7 +194,7 @@ PS: It's a very Quick&Simple explanation, even some command here appear similar,
 
 Portainer Docu was cleary on the installation process:
 
-``docker volume create portainer_data`` 
+``docker volume create portainer_data``
 
 For creating a Volume for Portainer named `portainer_data`.
 
