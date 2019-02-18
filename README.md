@@ -220,7 +220,22 @@ PS: The setup, tells us to pass Docker socket to Portainer, in local option, but
 
 ### Installing and Configure Traefik ###
 
-...Work in Progress!
+In order to install and configure Traefik we need to create a docker-compose.yml file.
+
+Keeping in mind all stuff we learned we know:
+
+  - We must select an image to start from.
+  - We must set a Container Name
+  - We can add some flag in our container
+  - We must declare a Network to Join our container (or going in the default "bridge" Network)
+  - We can expose some port
+  - We must attach some volume for pass socket, traefik.toml and other config file
+
+  So, if u want to see the docker-compose.yml of our Traefik Container, it's in root of this folder!
+
+  
+
+### Installing Portainer ###
 
 ### How To Start a Project ###
 

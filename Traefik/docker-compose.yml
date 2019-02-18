@@ -26,37 +26,7 @@ services:
    - ./traefik.toml:/traefik.toml #Here we have the toml configuration as volume
    - ./acme.json:/acme.json #here we have acme settings for let's encrypt feature
 
-### Here we Have Portainer ###
- container-manager:
-
-  image: portainer/portainer
-
-  container_name: portainer
-
-  restart: always 
-
-  depends_on:
-   - reverse-proxy
-
-  networks:
-   - prx
-      
-  ports:
-   - "9000:9000" #Declare port for WebUI
-
-  volumes:
-   - /var/run/docker.sock:/var/run/docker.sock #Here we pass docker socket to Portainer
-   - portainer_data:/data
-  labels:
-   - "traefik.backend=portainer"
-   - "traefik.frontend.rule=Host:portainer.dotroot.xyz"
-   - "traefik.port=80"
-   - "traefik.enable=true"
-   - "traefik.docker.network=prx"
-
-volumes:
-  portainer_data:
-
 networks:       
   prx:
     external: false #Here docker create the network. But if i already created this network, set to true value
+

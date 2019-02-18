@@ -1,0 +1,53 @@
+defaultEntryPoints = ["http", "https"]
+
+[entryPoints]
+  [entryPoints.traefik]
+    address = ":8080"
+    [entryPoints.traefik.auth]
+      [entryPoints.traefik.auth.basic]
+        users = ["admin:$apr1$NO5ChYGH$OqE9rpq2AGXVPtIeURAPW0"]
+  [entryPoints.http]
+    address = ":80"
+      [entryPoints.http.redirect]
+        entryPoint = "https"
+  [entryPoints.https]
+    address = ":443"
+      [entryPoints.https.tls]
+
+[api]
+  # Name of the related entry point
+  #
+  # Optional
+  # Default: "traefik"
+  #
+  entryPoint = "traefik"
+
+  # Enable Dashboard
+  #
+  # Optional
+  # Default: true
+  #
+  dashboard = true
+
+  # Enable debug mode.
+  # This will install HTTP handlers to expose Go expvars under /debug/vars and
+  # pprof profiling data under /debug/pprof/.
+  # Additionally, the log level will be set to DEBUG.
+  #
+  # Optional
+  # Default: false
+  #
+  debug = true
+
+[acme]
+email = "capobuf@gmail.com"
+storage = "acme.json"
+entryPoint = "https"
+onHostRule = true
+  [acme.httpChallenge]
+  entryPoint = "http"
+
+[docker]
+domain = "dotroot.xyz"
+watch = true
+network = "tr-prx"
