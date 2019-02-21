@@ -52,7 +52,7 @@ services:
   labels: #Labels needed for pass some value to traefik
    - "traefik.backend=portainer" #Give the name for backend
    - "traefik.frontend.rule=Host:portainer.dotroot.xyz" #Rule for hostname redirection
-   - "traefik.port=80" #Port that traefik must use
+   - "traefik.port=9000" #Port that traefik must use
    - "traefik.enable=true" #Enable traefik on this container
    - "traefik.docker.network=prx" #Specify wich network Traefik must use for connect to container
 
