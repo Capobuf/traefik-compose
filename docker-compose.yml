@@ -38,6 +38,9 @@ services:
   depends_on:
    - reverse-proxy
 
+  environment:
+  LOG_LEVEL: debug
+
   networks:
    - prx
       
