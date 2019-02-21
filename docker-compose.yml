@@ -6,7 +6,7 @@ services:
  reverse-proxy: #Name of Service
   image: traefik #The official Traefik docker image
   
-  container_name: traefik 
+  container_name: traefik #Name of Container
     
   command: --api --docker #Enables the web UI and tells Træfik to listen to docker
     
@@ -17,50 +17,48 @@ services:
    - "80:80"     #The HTTP port
    - "443:443"   #The HTTPS port
 
-  labels:
-   - traefik.frontend.rule=Host:proxy.dotroot.xyz
-   - traefik.port=8080
+  labels: #Labels needed for pass some value to traefik
+   - traefik.frontend.rule=Host:proxy.dotroot.xyz #Rule for hostname redirection
+   - traefik.port=8080 #Port that Traefik must use
     
-  volumes:
+  volumes: #Declare volumes to attach to container
    - /var/run/docker.sock:/var/run/docker.sock #Here we pass docker socket to Traefik
    - ./traefik.toml:/traefik.toml #Here we have the toml configuration as volume
    - ./acme.json:/acme.json #here we have acme settings for let's encrypt feature
 
 ### Here we Have Portainer ###
- container-manager:
 
-  image: portainer/portainer
+ container-manager: #Name of Service
 
-  container_name: portainer
+  image: portainer/portainer #Official Portainer Image from Docker Registry
 
-  restart: always 
+  container_name: portainer #Container Name
 
-  depends_on:
-   - reverse-proxy
+  restart: always #Policy of restart, try to restart every time go down
 
-  environment:
-   LOG_LEVEL: debug
+  depends_on: #Wait follow service before starting
+   - reverse-proxy #Wait Traefik for starting
 
-  networks:
-   - prx
+  networks: #Declare wich network join container
+   - prx #Name of Network
       
-  ports:
+  ports: #Ports to be exposed
    - "9000:9000" #Declare port for WebUI
 
-  volumes:
+  volumes: #Declare volumes to attach to container
    - /var/run/docker.sock:/var/run/docker.sock #Here we pass docker socket to Portainer
-   - portainer_data:/data
+   - portainer_data:/data #Define portainer_data for make persistent session of portainer
 
-  labels:
-   - "traefik.backend=portainer"
-   - "traefik.frontend.rule=Host:portainer.dotroot.xyz"
-   - "traefik.port=80"
-   - "traefik.enable=true"
-   - "traefik.docker.network=prx"
+  labels: #Labels needed for pass some value to traefik
+   - "traefik.backend=portainer" #Give the name for backend
+   - "traefik.frontend.rule=Host:portainer.dotroot.xyz" #Rule for hostname redirection
+   - "traefik.port=80" #Port that traefik must use
+   - "traefik.enable=true" #Enable traefik on this container
+   - "traefik.docker.network=prx" #Specify wich network Traefik must use for connect to container
 
-volumes:
-  portainer_data:
+volumes: #Declare volume
+  portainer_data: #Declared for Portainer data
 
-networks:       
-  prx:
+networks: #Declare Network
+  prx: #Name of network
     external: false #Here docker create the network. But if i already created this network, set to true value
