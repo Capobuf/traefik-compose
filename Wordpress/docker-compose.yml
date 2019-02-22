@@ -10,10 +10,13 @@ services:
        - intr #Name of Network
      restart: always
      environment:
-       MYSQL_ROOT_PASSWORD: cannasuomo
+       MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
        MYSQL_DATABASE: wordpress
        MYSQL_USER: root
        MYSQL_PASSWORD: cannasuomo
+     labels: #Labels needed for pass some value to traefik
+       - "traefik.enable=false" #Enable traefik on this container
+
 
    wordpress:
      depends_on:
@@ -26,15 +29,15 @@ services:
      networks: #Declare wich network join container
        - intr #Name of Network
      environment:
-       WORDPRESS_DB_HOST: db:3306
-       WORDPRESS_DB_USER: root
-       WORDPRESS_DB_PASSWORD: cannasuomo
-       WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: cannasuomo
+      WORDPRESS_DB_NAME: wordpress
 
      labels: #Labels needed for pass some value to traefik
        - "traefik.backend=wordpress" #Give the name for backend
        - "traefik.frontend.rule=Host:therealvoice.dotroot.xyz" #Rule for hostname redirection
-       - "traefik.port=80" #Port that traefik must use
+       - "traefik.port=8000" #Port that traefik must use
        - "traefik.enable=true" #Enable traefik on this container
        - "traefik.docker.network=intr" #Specify wich network Traefik must use for connect to container
 volumes:

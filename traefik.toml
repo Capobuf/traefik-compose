@@ -25,10 +25,12 @@ email = "capobuf@gmail.com"
 storage = "acme.json"
 entryPoint = "https"
 onHostRule = true
+onDemand = false
   [acme.httpChallenge]
   entryPoint = "http"
 
 [docker]
 domain = "dotroot.xyz"
-watch = true
-network = "tr-prx"
+watch = false
+network = "prx"
+exposedByDefault = false
