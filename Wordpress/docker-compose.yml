@@ -1,0 +1,44 @@
+version: '3.3'
+
+services:
+   db:
+     image: mysql:5.7
+     container_name: db_wordpress #Container Name
+     volumes:
+       - db_data:/var/lib/mysql
+     networks: #Declare wich network join container
+       - intr #Name of Network
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: cannasuomo
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: root
+       MYSQL_PASSWORD: cannasuomo
+
+   wordpress:
+     depends_on:
+       - db
+     image: wordpress:latest
+     container_name: therealvoice_wordp #Container Name
+     ports:
+       - "8000:80"
+     restart: always
+     networks: #Declare wich network join container
+       - intr #Name of Network
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_USER: root
+       WORDPRESS_DB_PASSWORD: cannasuomo
+       WORDPRESS_DB_NAME: wordpress
+
+     labels: #Labels needed for pass some value to traefik
+       - "traefik.backend=wordpress" #Give the name for backend
+       - "traefik.frontend.rule=Host:therealvoice.dotroot.xyz" #Rule for hostname redirection
+       - "traefik.port=80" #Port that traefik must use
+       - "traefik.enable=true" #Enable traefik on this container
+       - "traefik.docker.network=intr" #Specify wich network Traefik must use for connect to container
+volumes:
+    db_data: {}
+networks: #Declare Network
+  intr: #Name of network
+    external: false #Here docker create the network. But if i already created this network, set to true value
