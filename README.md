@@ -12,61 +12,24 @@ This repo is composed from 3 files:
 
 ### **Requirements** ###
 
-We are using an Ubuntu Machine (18.04.02) Hosted on DigitalOcean.
+A linux machine with Docker installed (>=18.09.2).
 
-Really, it's a Droplet, with an Image of Docker pre-installed. 
+Traefik >=1.7.9
 
-### **How To Clone a Repo** ###
-
-In order to using pre-esisting repository submitted by Original Creators of Traefik and more we need to clone the repository (something like download the entire folder with all file)
-
-For do this, we need to check if `git` command it's available on our machine.
-So type in terminal:
-
-`git --version`
-
-In case we have already installed `git` we was able to see
-
-`git version X.XX.X`
-
-If not, we can install `git` via apt (on debian-based distro) with:
-
-`sudo apt-get install git`
-
-So, for doing a "clone" of a repo we can use:
+### **How To Clone the repository** ###
 
 `git clone https://github.com/Capobuf/traefik-compose.git`
 
-In this case, we clone this repo, but replacing the url we can clone another repo!
-
-### **Version of Traefik** ###
-We using latest image available on DockerHub Registry of Trafeik, using :latest tag on repo/imagetag command.
-
-### **DockerFile** ###
-A DockerFile, it's a text file, without extension, that allow us to create an instruction for build an image or run a container.
-
-In this file, we must declare an base image from starting to work!
-
-i.e.
-
-```toml
-FROM debian:stretch-slim
-```
-To this point, we can add all commands we want.
-Every, single command, create a layer on image.
-That's really helpful for modify and understand error!
-
-
 ### How to Generate Hashed Passwd for Basic Auth in Traefik ###
 
-As described in [Digital Ocean Documentation](https://www.digitalocean.com/community/tutorials/how-to-use-traefik-as-a-reverse-proxy-for-docker-containers-on-ubuntu-16-04) we can use **htpasswd** utilty for generating an hash from text.
+As described in [this Digital Ocean's article](https://www.digitalocean.com/community/tutorials/how-to-use-traefik-as-a-reverse-proxy-for-docker-containers-on-ubuntu-16-04) we can use **htpasswd** utilty for generating an hash from text.
 This utility was contained in **apache2-util** package.
 
 So first of all, install the main package:
 
 `sudo apt-get install apache2-utils`
 
-For Generating the Hash:
+Generating the Hash:
 
 `htpasswd -nb admin your_password_here`
 
@@ -82,7 +45,7 @@ Insert this string in **traefik.toml**, in this section
 [web]
 address = ":8080"
   [web.auth.basic]
-  users = ["your_hashed_password_here"]
+  users = ["user_name:your_hashed_password_here"]
   ```
 
 As example showed before, something like this:
@@ -94,28 +57,26 @@ address = ":8080"
   users = ["admin:$apr1$3jk2MbXm$ZNeJi9pjyYNsKRKLBCg1v1"]
   ```
 
+### Edit your configuration ###
+
+You should edit in traefik.toml:
+
+```toml
+email = "capobuf@gmail.com"
+domain = "dotroot.xyz"
+```
+
+blalbalbla
+
 ### **How To SetUp Environment Variables** ###
 
-First of all, the Env Variables are simply a dynamic variable/path of our system resources. We're using this variable to pass information from a process to other.
-Usually, all Env have Capital letters, for distinguish the Env from other contex.
+We prefer to store sensitive data inside enviroments variables. This is a best practice for security and reusable data across multiple containers.
 
-i.e $USER in my linux shell response something like **Capobuf**. 
+We setup a **.env** file **in the root of the project.**
 
-But in @daton89 shell, response **daton**
+For example, we can create multiple **.env** files, each one for an environment: one for testing, one for production and one for staging.
 
-As we can see, depends of environment!
-
-Docker support import from a file for set all Env Variable direct in docker compose.
-This method it's more safer & faster!
-
-
-This file it's called **.env** and **must be placed in the same folder of docker compose file.**
-
-For example, we can create two different **.env** files, one for testing, one for production environment.
-
-Note that Dockerfile wants syntax like VAL=VAL for taking the variable, support # for commenting and blank line are simply ignored.
-
-An example of **.env** file it's something like this:
+This is an example of **.env** file:
 
 ```ENV
 ACME_ENABLE=false
@@ -151,7 +112,7 @@ services:
 
 As we can see in this **portion of DockerFile** we use the **env** file for declare the env variable.
 
-## How to Start a Project ##
+## How to Start the Project ##
 
 First, we need to install a GUI for manage our container.
 We choose [Portainer](https://www.portainer.io/), very useful tool!
