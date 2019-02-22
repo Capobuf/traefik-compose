@@ -91,27 +91,6 @@ TRAEFIK_ENTRYPOINT_HTTPS=
 TRAEFIK_HOST=domain.local,www.domain.local
 ```
 
-As we can see, all file it's ENV_Name=VALUE
-
-Ok, we have set the **env** file, now it's turn of DockerFile
-
-```java
-version: 3.3
-services:
-  lb:
-    image: traefik:1.5-alpine
-      restart: always
-      command: --web --acme.storage=/etc/traefik/acme.json --logLevel=info \
-         ${TRAEFIK_ENTRYPOINT_HTTP} ${TRAEFIK_ENTRYPOINT_HTTPS}\
-                 --defaultentrypoints=${TRAEFIK_DEFAULT_ENTRYPOINTS} \
-                         --acme=${ACME_ENABLE} --acme.entrypoint=https --acme.httpchallenge --acme.httpchallenge.entrypoint=http \
-                 --acme.domains="${ACME_DOMAINS}" --acme.email="${ACME_EMAIL}" \
-                 --docker --docker.domain="${DOCKER_DOMAIN}" --docker.endpoint="unix:///var/run/docker.sock" \
-                 --docker.watch=true --docker.exposedbydefault="false"
-```
-
-As we can see in this **portion of DockerFile** we use the **env** file for declare the env variable.
-
 ## How to Start the Project ##
 
 First, we need to install a GUI for manage our container.
@@ -119,37 +98,6 @@ We choose [Portainer](https://www.portainer.io/), very useful tool!
 
 After that, we need to install Traefik for manage all request to our server, this is for analyze, protect and secure our container (i.e. for avoid external attack, manage out-of-law request and more...)
 
-### Understanting Docker Socket ###
-
-First of all, we need to clarify the role of Docker (and Unix) socket.
-
-Sometimes we need to speak directly with Docker Daemon, for manage and run some operation with it.
-
-/var/run/docker.sock file that's the aswer for doing this.
-
-With this path we can communicate from a Daemon in a Container with docker daemon.
-
-An Example? Portainer.
-
-### Understanding Difference btw Dockerfile and Docker-compose.yml ###
-
-In Dockerfile we can write all our settings and parameters, from an **image**, for build another **image**, **not a container**.
-
-In Docker-compose.yaml we can write all settings and parameters for building a **container**, from an image.
-
-Usually, the docker-compose.yaml it's pretty useful for building a Service, that's something like a Stack of Container, wich is linked togheter, without too munch work.
-
-But it's same useful for understanding better all the components we using and debug better in case of failure.
-
-### Understanding Difference btw Docker Start, UP and Build ###
-
-`docker-compose up` it's the best choice. Start/Restart all service and stuff in docker-compose.yaml
-
-`docker build` essentially, telling docker to create an image from our dockerfile.
-
-`docker run` essentially telling docker to create a container with the image we specified, with all mod in dockerfile, even it come from DockerHub.
-
-PS: It's a very Quick&Simple explanation, even some command here appear similar, each one have a specific flag and field of use.
 
 ### Install & Configure Portainer ###
 

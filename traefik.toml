@@ -32,3 +32,5 @@ onHostRule = true
 domain = "dotroot.xyz"
 watch = true
 network = "tr-prx"
+
+logLevel = "DEBUG"
