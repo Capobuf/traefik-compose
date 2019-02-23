@@ -11,6 +11,7 @@ services:
       - wordp
     environment:
       WORDPRESS_DB_PASSWORD: example
+      WORDPRESS_DB_HOST: database:3306
     volumes:
       - ./config/php.conf.uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
       - ./wp-app:/var/www/html # Full wordpress project
@@ -22,7 +23,8 @@ services:
       - "traefik.port=80"
 
   database:
-    image: mariadb_wordp
+    image: mariadb
+    container_name: db_wordp
     networks:
       - wordp
     environment:
