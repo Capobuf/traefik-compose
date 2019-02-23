@@ -22,7 +22,8 @@ services:
       - "traefik.port=80"
 
   database:
-    image: mariadb_wordp
+    image: mariadb
+    container_name: db_wordp
     networks:
       - wordp
     environment:
