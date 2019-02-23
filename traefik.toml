@@ -1,6 +1,6 @@
 debug=true
 
-logLevel = "DEBUG"
+logLevel = "ERROR"
 
 defaultEntryPoints = ["http", "https"]
 
@@ -37,4 +37,5 @@ onDemand = false
 domain = "dotroot.xyz"
 watch = true
 network = "prx"
+exposedByDefault = false
 
