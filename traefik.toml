@@ -1,3 +1,7 @@
+debug=true
+
+logLevel = "DEBUG"
+
 defaultEntryPoints = ["http", "https"]
 
 [entryPoints]
@@ -31,6 +35,6 @@ onDemand = false
 
 [docker]
 domain = "dotroot.xyz"
-watch = false
+watch = true
 network = "prx"
-exposedByDefault = false
+
