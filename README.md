@@ -9,6 +9,8 @@ This repo is composed from 3 files:
 - traefik.toml
 
 ## Getting Started ##
+________________________
+
 
 ### **Requirements** ###
 
@@ -56,16 +58,19 @@ address = ":8080"
   [web.auth.basic]
   users = ["admin:$apr1$3jk2MbXm$ZNeJi9pjyYNsKRKLBCg1v1"]
   ```
+________________________
 
 ### Edit your configuration ###
 
-You should edit in traefik.toml:
+You need to insert your personal data in .env file, for docker-compose file and traefik.toml settings:
 
 ```toml
 email = "your@email.com"
 domain = "yourdomain.xyz"
 ```
 
+
+________________________
 
 ### **How To SetUp Environment Variables** ###
 
@@ -105,6 +110,8 @@ services:
       - "traefik.port = 80"
 ```
 
+________________________
+
 ## How to Start the Project ##
 
 ### Installing Traefik ###
@@ -142,6 +149,7 @@ services:
 
 ```
 
+________________________
 
 
 ### Installing Portainer ###
@@ -187,6 +195,7 @@ volumes:                      #Declare volume
 
 
 The complete docker-compose.yml it's available on the root directory.
+________________________
 
 ### Installing Wordpress ###
 
@@ -280,6 +289,8 @@ Enable web service, with traefik control panel on port 8080, with basic auth, st
       [entryPoints.traefik.auth.basic]  #Define Basic Auth
         users = ["user_name:your_hashed_password_here"]
 ```
+________________________
+
 
 
 ### Redirect all Request in HTTPS (Force HTTPS) ###
@@ -295,7 +306,18 @@ We can redirect all HTTP request to HTTPS.
     address = ":443"
       [entryPoints.https.tls]
 ```
+________________________
 
+
+### Traefik Settings (API) ###
+Here we can define some global settings for Traefik.
+
+```toml
+[api]
+
+  entryPoint = "traefik" #Name of default entrypoint
+  dashboard = true #Enable Dashboard
+```
 
 ________________________
 
@@ -312,10 +334,6 @@ watch = true #Watch changes of docker
 
 exposedbydefault = false #Expose only container with label "traefik.enable=true"
 ```
-
-________________________
-
-
 
 ________________________
 
