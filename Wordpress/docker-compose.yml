@@ -3,35 +3,38 @@ version: '3.1'
 services:
 
   wordpress:
-    image: wordpress
-    container_name: Wordpress
-    depends_on:
-      - database
-    networks:
-      - wordp
+    image: wordpress  #Image of Wordpress
+    container_name: $WP_CONTAINER_NAME #Name of Container
+    depends_on: 
+      - database  #Waiting Database for Starting
+    networks: #Network to connecting
+      - wordp #Name of Network
     environment:
-      WORDPRESS_DB_PASSWORD: example
-      WORDPRESS_DB_HOST: database:3306
+      WORDPRESS_DB_PASSWORD: $MYSQL_PASSWORD  #DB Password For Connecting to Database
+      WORDPRESS_DB_HOST: database:3306  #Connect parameters for database
     volumes:
       - ./config/php.conf.uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
-      - ./wp-app:/var/www/html # Full wordpress project
+      - ./wp-app:/var/www/html  #Entire 
     labels:
-      - "traefik.backend=wordpress"
-      - "traefik.docker.network=wordp"
-      - "traefik.frontend.rule=Host:therealvoice.dotroot.xyz"
-      - "traefik.enable=true"
-      - "traefik.port=80"
+      - "traefik.backend=$WP_CONTAINER_NAME" #Name of Backend for Traefik
+      - "traefik.docker.network=wordp"  #Select default network for Traefik Communication with container
+      - "traefik.frontend.rule=Host:nameofservice.yourdomain.xyz" #Url for reaching container
+      - "traefik.enable=true" #Enable Traefik expose on this container
+      - "traefik.port=80" #Select port to use in Traefik
 
   database:
-    image: mariadb
-    container_name: db_wordp
-    networks:
-      - wordp
+    image: mariadb  #Image of MariaDB
+    container_name: $DB_CONTAINER_NAME #Name of Container
+    networks: #Network to Connecting
+      - wordp #Name of network to connect
+    
     environment:
-      MYSQL_ROOT_PASSWORD: example
+      MYSQL_ROOT_PASSWORD: $MYSQL_PASSWORD #Database Root Password
+      MYSQL_USER: $MYSQL_USER #User of Database
+    
     volumes:
-      - ./wp-data:/docker-entrypoint-initdb.d
+      - ./wp-data:/docker-entrypoint-initdb.d #Database data
 
-networks:
-  wordp:
-    external: false
+networks: #Declare Networks
+  wordp:  #Name of network
+    external: false #Create Network

@@ -16,7 +16,7 @@ A linux machine with Docker installed (>=18.09.2).
 
 Traefik >=1.7.9
 
-### **How To Clone the repository** ###
+### How To Clone the repository ###
 
 `git clone https://github.com/Capobuf/traefik-compose.git`
 
@@ -62,11 +62,10 @@ address = ":8080"
 You should edit in traefik.toml:
 
 ```toml
-email = "capobuf@gmail.com"
-domain = "dotroot.xyz"
+email = "your@email.com"
+domain = "yourdomain.xyz"
 ```
 
-blalbalbla
 
 ### **How To SetUp Environment Variables** ###
 
@@ -74,87 +73,176 @@ We prefer to store sensitive data inside enviroments variables. This is a best p
 
 We setup a **.env** file **in the root of the project.**
 
-For example, we can create multiple **.env** files, each one for an environment: one for testing, one for production and one for staging.
-
 This is an example of **.env** file:
 
 ```ENV
-ACME_ENABLE=false
-ACME_EMAIL=user@domain.tld
-ACME_DOMAINS=domain.tld,www.domain.tld
+WP_CONTAINER_NAME=projectname_wp
+DB_CONTAINER_NAME=projectname_db
+DB_PASSWD=your_password
+```
 
-DOCKER_DOMAIN="dev.domain"
+And this is an example of application of .env file in a docker-compose.yml
 
-TRAEFIK_DEFAULT_ENTRYPOINTS=http
-TRAEFIK_ENTRYPOINT_HTTP=--entryPoints="Name:http Address::80"
-TRAEFIK_ENTRYPOINT_HTTPS=
-TRAEFIK_HOST=domain.local,www.domain.local
+```YML
+version: '3.1'
+
+services:
+
+  main:
+    image: image
+    container_name: $WP_CONTAINER_NAME #Here
+    networks:
+      - net
+    environment:
+      WORDPRESS_DB_PASSWORD: $DB_PASSWD #Here
+      WORDPRESS_DB_HOST: db:3306
+
+    labels:
+      - "traefik.backend = $WP_CONTAINER_NAME" #Here
+      - "traefik.docker.network = net"
+      - "traefik.frontend.rule = Host:nameofservice.yourdomain.xyz"
+      - "traefik.enable = true"
+      - "traefik.port = 80"
 ```
 
 ## How to Start the Project ##
 
+### Installing Traefik ###
+
+We need to install Traefik for manage all request to our server, this is for analyze, protect and secure our container (i.e. for avoid external attack, manage out-of-law request and more...)
+
+```YML
+version: '3'
+
+### Here we Have Traefik ###
+
+services:
+ reverse-proxy:             #Name of Service
+  image: traefik            #The official Traefik docker image
+  
+  container_name: traefik   #Name of Container
+    
+  command: --api --docker   #Enables the web UI and tells Træfik to listen to docker
+    
+  networks:                 #Connected Networks
+   - prx                    #Name of the Network
+
+  ports:                    #Exposed port
+   - "80:80"                #Expose HTTP port
+   - "443:443"              #Expose HTTPS port
+
+  labels:                   #Labels needed for pass some value to traefik
+   - traefik.frontend.rule=Host:proxy.yourdomain.xyz #Rule for hostname redirection
+   - traefik.port=8080      #Port that Traefik must use
+    
+  volumes:                  #Declare volumes to attach to container
+   - /var/run/docker.sock:/var/run/docker.sock #Pass docker socket to Traefik
+   - ./traefik.toml:/traefik.toml #Pass toml configuration as volume
+   - ./acme.json:/acme.json #ACME Settings for let's encrypt feature
+
+```
+
+
+
+### Installing Portainer ###
 First, we need to install a GUI for manage our container.
 We choose [Portainer](https://www.portainer.io/), very useful tool!
 
-After that, we need to install Traefik for manage all request to our server, this is for analyze, protect and secure our container (i.e. for avoid external attack, manage out-of-law request and more...)
+```YML
+version: '3'
+
+### Here we Have Portainer ###
+
+ container-manager:           #Name of Service
+
+  image: portainer/portainer  #Official Portainer Image from Docker Registry
+
+  container_name: portainer   #Container Name
+
+  restart: always             #Policy of restart, try to restart every time go down
+
+  depends_on:                 #Wait follow service before starting
+   - reverse-proxy            #Wait Traefik for starting
+
+  networks:                   #Declare wich network join container
+   - prx                      #Name of Network
+      
+  ports:                      #Ports to be exposed
+   - "9000:9000"              #Declare port for WebUI
+
+  volumes:                    #Declare volumes to attach to container
+   - /var/run/docker.sock:/var/run/docker.sock #Here we pass docker socket to Portainer
+   - portainer_data:/data     #Define portainer_data for make persistent session of portainer
+
+  labels:                     #Labels needed for pass some value to traefik
+   - "traefik.backend=portainer" #Give the name for backend
+   - "traefik.frontend.rule=Host:portainer.yourdomain.xyz" #Rule for hostname redirection
+   - "traefik.port=9000"      #Port that traefik must use
+   - "traefik.enable=true"    #Enable traefik on this container
+   - "traefik.docker.network=prx" #Specify wich network Traefik must use for connect to container
+
+volumes:                      #Declare volume
+  portainer_data:             #Declared for Portainer data
+```
 
 
-### Install & Configure Portainer ###
+The complete docker-compose.yml it's available on the root directory.
 
-Portainer Docu was cleary on the installation process:
+### Installing Wordpress ###
 
-``docker volume create portainer_data``
+```YML
+version: '3.1'
 
-For creating a Volume for Portainer named `portainer_data`.
+services:
 
-``docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer``
+  wordpress:
+    image: wordpress  #Image of Wordpress
+    container_name: $WP_CONTAINER_NAME #Name of Container
+    depends_on: 
+      - database  #Waiting Database for Starting
+    networks: #Network to connecting
+      - wordp #Name of Network
+    environment:
+      WORDPRESS_DB_PASSWORD: $MYSQL_PASSWORD  #DB Password For Connecting to Database
+      WORDPRESS_DB_HOST: database:3306  #Connect parameters for database
+    volumes:
+      - ./config/php.conf.uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+      - ./wp-app:/var/www/html  #Entire 
+    labels:
+      - "traefik.backend=$WP_CONTAINER_NAME" #Name of Backend for Traefik
+      - "traefik.docker.network=wordp"  #Select default network for Traefik Communication with container
+      - "traefik.frontend.rule=Host:nameofservice.yourdomain.xyz" #Url for reaching container
+      - "traefik.enable=true" #Enable Traefik expose on this container
+      - "traefik.port=80" #Select port to use in Traefik
 
-For Create a Container, in deattached mode, with 9000 as exposed port, listening docker socket, with an volume attached as `portainer_data`
+### Here we have Database ###
 
-More detailed:
+  database:
+    image: mariadb  #Image of MariaDB
+    container_name: $DB_CONTAINER_NAME #Name of Container
+    networks: #Network to Connecting
+      - wordp #Name of network to connect
+    
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_PASSWORD #Database Root Password
+      MYSQL_USER: $MYSQL_USER #User of Database
+    
+    volumes:
+      - ./wp-data:/docker-entrypoint-initdb.d #Database data
 
-`-d` run Daemon in Background
+networks: #Declare Networks
+  wordp:  #Name of network
+    external: false #Create Network
+```
 
-`-p 9000:9000` expose port 9000 of the container as port 9000 of the server.
+As we can see, there's some $ENV_VARIABLE, that's variable are explained in .env file in "Wordpress" directory.
 
-`-v /var/run/docker.sock:/var/run/docker.sock` pass Docker Socket to Portainer for manage and run container directly from Portainer. the `-v` flag it's used for attach a volume
-
-`-v portainer_data:/data portainer/portainer` for attach another storage to our container, called `portainer_data`
-
-After that, we can go into server_public_ip:9000 for showing first screen of Portainer, with possibility to set our credentials for login.
-
-We must select "Local" option, for manage our docker installation.
-
-PS: The setup, tells us to pass Docker socket to Portainer, in local option, but we did already :)
-
-### Installing and Configure Traefik ###
-
-In order to install and configure Traefik we need to create a docker-compose.yml file.
-
-Keeping in mind all stuff we learned we know:
-
-  - We must select an image to start from.
-  - We must set a Container Name
-  - We can add some flag in our container
-  - We must declare a Network to Join our container (or going in the default "bridge" Network)
-  - We can expose some port
-  - We must attach some volume for pass socket, traefik.toml and other config file
-
-  So, if u want to see the docker-compose.yml of our Traefik Container, it's in root of this folder!
-
-  
-
-### Installing Portainer ###
+More detail about Wordpress installation behind Traefik are explained in it's Readme.md file.
 
 ### How To Start a Project ###
 
 Describe here how to getting started:
 
-- ~~requirements, linux machine with linux and docker version xxx~~
-- ~~version of traefik etc~~
-- ~~how to clone repo~~
-- ~~how to set up environment variables~~
-- ~~how to generate your hashed password for basic auth of traefik admin panel~~
 - hwo to start project
 - how to check that everyting is working
 - future readings and related projects
@@ -167,67 +255,81 @@ ________________________
 
 ### Global configuration ###
 
-Global variables of trafik, like defaultEntrypoints etc.
+Global variables of trafik. 
+In this first area we can setting debug settings, select default entrypoints and more.
+
+Here an example:
+```toml
+debug=true  #Enable Debug
+
+logLevel = "ERROR"  #Select Debug Level
+
+defaultEntryPoints = ["http", "https"] #Default Entrypoint definition
+```
 ________________________
 
 ### Web configuration backend ###
 
-Enable we service, with traefik control panel on port 8080, with basic auth, statistics and last 20 errors logs.
+Enable web service, with traefik control panel on port 8080, with basic auth, statistics and last 20 errors logs.
 
 ```toml
-[web]
-address = ":8080"
-  [web.auth.basic]
-  users = ["admin:YOUR HASHED PASSWORD HERE"]
-  [web.statistics]
-  recentErrors = 20
+[entryPoints] #Define EntryPoint
+  [entryPoints.traefik] #Define Traefik EntryPoint
+    address = ":8080" #Define Port
+    [entryPoints.traefik.auth]  
+      [entryPoints.traefik.auth.basic]  #Define Basic Auth
+        users = ["user_name:your_hashed_password_here"]
 ```
 
-________________________
 
-### Docker configuration backend ###
+### Redirect all Request in HTTPS (Force HTTPS) ###
 
-In this project we are using traefik with docker provider, for more information see [traefik docs](https://link)
-
-```toml
-[docker]
-domain = "your domain here"
-watch = true
-exposedbydefault = false
-```
-
-________________________
-
-### Entrypoints definition (Force HTTPS) ###
-
-To force https over http we need to set entrypoints for http and https, and redirect http over https.
+We can redirect all HTTP request to HTTPS.
 
 ```toml
-[entryPoints]
   [entryPoints.http]
-  address = ":80"
-    [entryPoints.http.redirect]
-      entryPoint = "https"
+    address = ":80"
+      [entryPoints.http.redirect]
+        entryPoint = "https"
   [entryPoints.https]
-  address = ":443"
-    [entryPoints.https.tls]
+    address = ":443"
+      [entryPoints.https.tls]
 ```
+
+
+________________________
+
+### Docker Configuration Backend ###
+
+In this project we are using traefik with docker provider, for more information see [Traefik Docs](https://docs.traefik.io/configuration/backends/docker/)
+
+```toml
+[docker] #Define Docker Part
+
+domain = "your domain here" #Default Based Domain
+
+watch = true #Watch changes of docker
+
+exposedbydefault = false #Expose only container with label "traefik.enable=true"
+```
+
+________________________
+
+
 
 ________________________
 
 ### Let's Encrypt certificate support for Traefik ###
 
-Finally we configure the ACME section to enable traefik to generate certificates for us!
+Finally we configure the ACME section to enable traefik to generate certificates for us, using Let's Encrypt service.
 
 ```toml
+
 [acme]
 email = "your email"
-dnsProvider = "your dns provider"
-delayDontCheckDNS = 0
 storage = "acme.json"
-entryPoint = "https"
-onHostRule = true
-onDemand = false
+entryPoint = "https" #Entrypoint to apply Certificate
+onHostRule = true #Generate Certificate for all exposed container
 ```
 
 ## Contributing ##
